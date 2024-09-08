@@ -1,16 +1,17 @@
 name: CI Pipeline
 
+# Trigger the workflow on every push to the main branch
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
+    - name: Checkout the repository
       uses: actions/checkout@v2
 
     - name: Set up Python
@@ -18,15 +19,23 @@ jobs:
       with:
         python-version: 3.9
 
-    - name: Install dependencies
+    - name: Install Python dependencies
       run: |
+        python -m pip install --upgrade pip
         pip install -r requirements.txt
+
+    - name: Run Python app (Test run)
+      run: |
+        python app.py London 2024-09-10  # Run the app with a default city and date to ensure it works
 
     - name: Build Docker image
       run: |
         docker build -t bikov777/weather_app3:latest .
 
-    - name: Push Docker image to Docker Hub
+    - name: Log in to Docker Hub
       run: |
         echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+    - name: Push Docker image to Docker Hub
+      run: |
         docker push bikov777/weather_app3:latest
